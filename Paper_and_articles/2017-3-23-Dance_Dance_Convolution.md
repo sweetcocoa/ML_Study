@@ -63,3 +63,51 @@ STFT의 차원을 줄이기 위해 Spectrum의 크기에 Mel-scale 필터를 적
 고정된 폭 연산을 위해, 최종적인 오디오 표현은 15 x 80 x 3 크기의 텐서가 되었다. ( 15 : 프레임, 80 : Spectrum 강도, 3 : 채널 ) 
 이것은 150ms의 오디오 배경에 80주파수 대역, 그리고 3가지 서로 다른 윈도우 크기를 뜻한다.
 더 좋은 학습 성능을 위해, 우리는 80개의 주파수 밴드를 표준정규화하였다. 이러한 특성 추출은 ESSENTIA library를 이용하였다.
+
+
+## **6. 스탭 배치** ##
+
+우리는 스탭을 배치하기 위해 여러 가지 모델을 도입했는데, 그것들의 출력은 모두 스탭이 배치될 확률을 계산하는 single sigmoid unit이다.
+
+모든 모델에 대해서, 우리는 오디오 특성을 **one-hot representation of difficulty** 로 augmentation하였다.(?)
+
+### ** 모델 설명 ** ###
+
+	Audio features (112 timestamps, 80 freqs, 3 channels)
+	
+	CNN ( Conv 7x3x3 )
+	          ( Conv 3x3x10 )
+	
+	Flatten Frequency and Channel Axes
+	
+	RNN ( LSTM(One-hot Difficulty) 
+		-> LSTM )
+
+	MLP ( Fully Connected - Fully Connected ) 
+
+	Sigmoid
+
+
+여기서는 2개의 Convolutional layer 에 2개의 Fully Connected layer를 붙인 CNN 구조를 채택했다.
+
+첫 번째 Convolutional layer은 10개의 필터 커널을 갖는데, 시간 축으로 7만큼, 주파수 축으로 3만큼의 커널이다.
+
+두 번째 Convolutional layer은 20개의 필터 커널을 갖고, 시간 축, 주파수 축으로 각각 3의 길이를 갖는다.
+
+우리는 주파수 축에만 stride 3의 1D max-pooling을 각각의 convolutional layer 뒤에 적용했으며, ReLU를 사용했다.
+
+우리는 여기에 더해 성능을 올리기 위해 C-LSTM 모델을 제안한다.  긴 시간의 windows의 정보를 integrate하는 RNN과 Convolutional encoding을 결합한 형태이다.
+
+각 time step의 raw audio를 encode하기 위해 처음 두 개의 convolutional layer(CNN과 같은 형태)를 적용한다. 두 번째 Conv Layer의 출력은 3D Tensor로,  채널과 주파수 축에 대해 flatten되도록 했다. 각 시간 스텝의 flattened features는 2-layer RNN의 입력이 된다.
+
+차트의 의도된 난이도는 얼마나 많은 step이 어느 곳에 배치되는지에 영향을 미친다. 우리는 난이도와 상관없는 모델과 난이도에 따른 모델 두 개를 모두 훈련했고, 이 특성이 정보를 갖는다는것을 확인했다. 우리는 CNN의 flattened output을 LSTM에 입력으로 쓰기 전에 난이도 정보를 연결했다.
+
+우리는 Weight 행렬들을 Glorot & Bengio (2010)의 방법으로 초기화하였다.
+
+- 트레이닝 방법
+
+Binary CE를 mini-batch SGD로 최소화하였다. 모든 모델에 대해 우리는 256개의 batch size로 훈련시켰고, 그것들의 L2 Norm이 5를 넘으면 gradient를 scaling down했다. 
+
+우리는 각각의 LSTM과 FC layer에 50%의 Dropout을 적용했다. 자세한 내용은  (Zaremba et al., 2014; Lipton et al., 2016; Dai & Le, 2015) 의 방법을 따라했다.
+
+RNN의 각 타겟 프레임은 해당하는 프레임의 Ground truth value이다. 
