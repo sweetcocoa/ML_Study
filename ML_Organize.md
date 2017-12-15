@@ -55,3 +55,11 @@
 > 1. 각각의 feature들이 이미 uncorrelated되어있다고 가정, feature각각에 대해서 scalar형태로 normalize한다.
 > 2. normalize된 값에 scale factor (gamma)와 shift factor(beta)를 더해주고, 이 변수들을 back-prop 과정에서 같이 train시킨다.(Activation function의 non-linearity 보존)
 > 3. Training data 전체에 대해 mean과 Variance를 구하는 것이 아니라, mini-batch 단위로 접근하여 계산한다. 즉 train할 대, mini-batch 안에서의 mean, variance를 구하고 이 것을 이용해 normalize한다.
+
+
+# Loss Functions #
+
+- NLL (Negative Log Likelihood)
+    - Multiclass Cross-entropy
+- Cross-Entropy
+    - ON/OFF
