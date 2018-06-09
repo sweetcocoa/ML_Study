@@ -46,13 +46,16 @@ Realistic함이 떨어집니다.
 
 인 ca가 어떤 realistic한 sample에 대응되어야 합니다.
 
-> 참고로, VAE에서의 latent space에 대한 사전분포는 spherical Gaussian인데요. 고차원 공간에서 prior에서 sample한다는 것은 실제로 어떤 unit 단위 초원(unit hypersphere)의 uniform distribution에서의 sample과 거의 같습니다. 그래서 우리는 위 식 대신 spherical interpolation을 latent space에서 적용했습니다. 
+-  참고로, VAE에서의 latent space에 대한 사전분포는 spherical Gaussian인데요. 고차원 공간에서 prior에서 sample한다는 것은 실제로 어떤 unit 단위 초원(unit hypersphere)의 uniform distribution에서의 sample과 거의 같습니다. 그래서 우리는 위 식 대신 spherical interpolation을 latent space에서 적용했습니다.
+- Spherical interpolation의 도입은 - white, 2016 ([Sampling Generative Networks](https://arxiv.org/pdf/1609.04468.pdf))를 참조해야 합니다.
+- 또다른 방법으로는 우리의 모델이 어떠한 의미벡터(attribute vector)를 생성하는지를 조사하는 것입니다. latent space에서 attribute A를 빼고 attribute B를 더하면, 실제 데이터의 샘플에서도 attribute A 대신 B가 들어간 샘플이 나와야겠죠. 이를 위해서는 어떤 Attribute A를 갖는 샘플의 Average letent vector를 계산하는데 보통 attritubte는 쌍으로 훈련됩니다. 예를 들어 얼굴 이미지라면 안경이 있는 / 없는 으로요.
 
-또다른 방법으로는 우리의 모델이 어떠한 의미벡터(attribute vector)를 생성하는지를 조사하는 것입니다. latent space에서 attribute A를 빼고 attribute B를 더하면, 실제 데이터의 샘플에서도 attribute A 대신 B가 들어간 샘플이 나와야겠죠.
+- VAE의 Latent space의 사전분포가 Spherical Gaussian 이 되는 이유는 다음을 생각해 봅시다.
+일변수 가우시안 분포의 그림은 mu를 중심으로 볼록 솟은 형태죠.
+이변수 가우시안 분포는 mu를 중심으로 하는 산이 됩니다.
+이런식으로 이어가다 보면 다변수 가우시안 분포는 어떠한 초공간 안의 구가 되는데요(mu가 0이면 그럴 수도 있을 것 같은데..)
 
-이를 위해서는 어떤 Attribute A를 갖는 샘플의 Average letent vector를 계산하는데 보통 attritubte는 쌍으로 훈련됩니다. 예를 들어 얼굴 이미지라면 안경이 있는 / 없는 으로요.
-
-
+-
 
 ### ** TODO **
 
